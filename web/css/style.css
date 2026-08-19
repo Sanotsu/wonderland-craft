@@ -1,0 +1,217 @@
+html,body{margin:0;height:100%;overflow:hidden;background:#1a1030;
+  font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;user-select:none;
+  touch-action:none;overscroll-behavior:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+canvas{display:block}
+
+/* ---------- 尺寸变量：触屏 UI 随视口自适应 ---------- */
+:root{
+  --slot:46px; --btnJump:72px; --btnAct:56px; --btnFly:48px; --btnTop:44px;
+}
+body.touch{
+  --slot:40px; --btnJump:64px; --btnAct:52px; --btnFly:46px; --btnTop:44px;
+}
+/* 横屏矮屏（360/375/412 高度的各类手机，含 20:9 / 21:9）*/
+@media (orientation:landscape) and (max-height:520px){
+  body.touch{
+    --slot:clamp(24px, 9vmin, 34px);
+    --btnJump:clamp(46px, 18vh, 66px);
+    --btnAct:clamp(36px, 14vh, 52px);
+    --btnFly:clamp(32px, 12vh, 46px);
+    --btnTop:clamp(32px, 12vh, 44px);
+  }
+  body.touch #hint{display:none}
+  body.touch #info{font-size:10px}
+  body.touch #toast{bottom:calc(var(--slot)*3 + 30px);font-size:13px}
+}
+
+#vignette{pointer-events:none;position:fixed;inset:0;z-index:5;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(60,20,80,.30))}
+#crosshair{position:fixed;left:50%;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;
+  z-index:10;pointer-events:none;display:none}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.85);
+  box-shadow:0 0 4px rgba(150,60,120,.8)}
+#crosshair::before{left:8px;top:0;width:2px;height:18px}
+#crosshair::after{left:0;top:8px;width:18px;height:2px}
+
+#hotbar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:10;
+  display:grid;grid-template-columns:repeat(10,var(--slot));gap:4px;justify-content:center}
+.slot{width:var(--slot);height:var(--slot);border-radius:calc(var(--slot)*.22);
+  position:relative;cursor:pointer;background:rgba(35,18,60,.60);
+  border:2px solid rgba(255,255,255,.22);transition:transform .08s;
+  -webkit-tap-highlight-color:transparent}
+.slot canvas{position:absolute;left:2px;top:2px;
+  width:calc(var(--slot) - 4px);height:calc(var(--slot) - 4px);image-rendering:pixelated}
+.slot .k{position:absolute;top:0;left:4px;font-size:calc(var(--slot)*.24);color:rgba(255,255,255,.55)}
+.slot.sel{border-color:#ffd76e;box-shadow:0 0 14px rgba(255,215,110,.55);transform:scale(1.1)}
+.slot .ct{position:absolute;right:2px;bottom:0;font-size:calc(var(--slot)*.3);font-weight:700;
+  color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.6);display:none;pointer-events:none}
+.slot.empty canvas{opacity:.38}
+body.survival #btnFly{display:none!important}
+
+#toast{position:fixed;bottom:calc(16px + var(--slot)*3 + 54px);left:50%;transform:translateX(-50%);z-index:11;
+  color:#fff;font-size:16px;text-shadow:0 2px 6px rgba(80,20,90,.9);
+  opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap}
+#info{position:fixed;top:10px;right:14px;z-index:10;color:rgba(255,255,255,.85);font-size:12px;
+  text-align:right;text-shadow:0 1px 3px rgba(60,10,70,.8);line-height:1.7;pointer-events:none}
+#hint{position:fixed;top:10px;left:14px;z-index:10;color:rgba(255,255,255,.8);font-size:12px;
+  text-shadow:0 1px 3px rgba(60,10,70,.8);pointer-events:none}
+
+/* ---------- 生存 HUD：红心 / 受伤闪屏 / 死亡遮罩 ---------- */
+#hearts{position:fixed;bottom:calc(16px + var(--slot)*3 + 24px);left:50%;transform:translateX(-50%);
+  z-index:10;display:none;gap:2px;pointer-events:none;filter:drop-shadow(0 2px 3px rgba(60,10,70,.7))}
+/* 纯 CSS 红心：旋转正方 + 双圆；b 空心底色，em>s 血量填充（half 裁左半） */
+.ht{position:relative;width:18px;height:16px;flex:none}
+.ht b,.ht s{position:absolute;left:3px;top:2px;width:11px;height:11px;
+  transform:rotate(45deg);text-decoration:none;font-weight:400}
+.ht b{background:rgba(255,235,245,.28)}
+.ht s{background:linear-gradient(135deg,#ff7a92,#e83a63)}
+.ht b::before,.ht b::after,.ht s::before,.ht s::after{
+  content:'';position:absolute;width:11px;height:11px;border-radius:50%}
+.ht b::before,.ht s::before{left:-5.5px}
+.ht b::after,.ht s::after{top:-5.5px}
+.ht b::before,.ht b::after{background:rgba(255,235,245,.28)}
+.ht s::before{background:#ff7a92} .ht s::after{background:#ff7a92}
+.ht em{position:absolute;inset:0;overflow:hidden;font-style:none}
+.ht.half em{width:56%}
+.ht.off em{width:0}
+body.touch #hearts{left:8px;transform:none;bottom:calc(10px + var(--slot)*3 + 28px);gap:1px}
+body.touch .ht{width:14px;height:13px}
+#hurt{pointer-events:none;position:fixed;inset:0;z-index:14;opacity:0;
+  background:radial-gradient(ellipse at center,transparent 38%,rgba(255,30,70,.5) 100%)}
+#hurt.on{animation:hurtFlash .55s ease-out}
+@keyframes hurtFlash{0%{opacity:1}100%{opacity:0}}
+#death{position:fixed;inset:0;z-index:26;display:none;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;text-align:center;background:rgba(46,6,30,.86);
+  backdrop-filter:blur(4px);color:#ffd9e4}
+#death .dph{font-size:60px;animation:deathFloat 2.6s ease-in-out infinite}
+@keyframes deathFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+#death h2{margin:0;font-size:26px;color:#ffe4ee;text-shadow:0 2px 12px rgba(255,80,120,.5)}
+#death p{margin:0 0 8px;font-size:14px;color:#e8a8c0}
+#btnRespawn{font-size:17px;padding:11px 38px;border:none;border-radius:999px;cursor:pointer;
+  color:#fff;background:linear-gradient(135deg,#e8557e,#9a55d8);
+  box-shadow:0 10px 26px rgba(190,70,150,.45)}
+#btnRespawn:hover{transform:scale(1.05)}
+
+#title{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  background:rgba(30,12,52,.45);backdrop-filter:blur(3px);
+  /* 延迟淡入：遮住 WebView 首帧视口未稳（误报竖屏尺寸）时弹窗错误放大的窗口 */
+  animation:titleIn .35s ease .18s backwards}
+@keyframes titleIn{from{opacity:0}to{opacity:1}}
+#title .card{max-width:560px;text-align:center;padding:34px 44px;border-radius:22px;
+  background:linear-gradient(160deg,rgba(255,240,250,.94),rgba(232,225,255,.92));
+  box-shadow:0 24px 70px rgba(40,8,60,.55),inset 0 0 0 2px rgba(255,255,255,.7)}
+#title .suit{font-size:20px;letter-spacing:14px;color:#c2334d;text-indent:14px}
+#title h1{margin:8px 0 2px;font-size:40px;color:#5a2d86;letter-spacing:1px;
+  text-shadow:0 2px 0 #fff,0 6px 16px rgba(120,60,160,.35)}
+#title h2{margin:0 0 14px;font-size:18px;color:#a4559a;font-weight:500}
+#title .story{color:#6b5a86;font-size:14px;line-height:1.9;margin:0 0 20px}
+#play{font-size:20px;padding:13px 46px;border:none;border-radius:999px;cursor:pointer;
+  color:#fff;background:linear-gradient(135deg,#e8557e,#9a55d8);
+  box-shadow:0 10px 26px rgba(190,70,150,.45);transition:transform .1s}
+#play:hover{transform:scale(1.06)}
+.menu-row{margin-top:14px;display:flex;gap:10px;justify-content:center}
+.mini{font-size:13px;padding:7px 16px;border:none;border-radius:999px;cursor:pointer;
+  color:#5a2d86;background:rgba(90,45,134,.10);border:1px solid rgba(90,45,134,.25)}
+.mini:hover{background:rgba(90,45,134,.18)}
+#modeRow{display:flex;gap:8px;justify-content:center;margin:0 0 16px}
+#modeRow button{font-size:14px;padding:8px 22px;border:none;border-radius:999px;cursor:pointer;
+  color:#5a2d86;background:rgba(90,45,134,.08);border:1px solid rgba(90,45,134,.22);
+  transition:all .12s}
+#modeRow button.on{color:#fff;background:linear-gradient(135deg,#e8557e,#9a55d8);
+  border-color:transparent;box-shadow:0 4px 14px rgba(190,70,150,.4)}
+.seed-row{margin-top:10px;display:flex;gap:8px;align-items:center;justify-content:center}
+.seed-row label{font-size:12.5px;color:#84719f}
+#seedInput{width:130px;padding:6px 10px;font-size:13px;color:#5a2d86;border-radius:8px;
+  border:1px solid rgba(90,45,134,.30);background:rgba(255,255,255,.65);outline:none}
+#seedInput:focus{border-color:#9a55d8}
+.seed-row .mini{padding:6px 12px;font-size:12px}
+.save-note{margin:10px 0 0;font-size:11.5px;color:#9a8ab2}
+#title .keys{margin-top:16px;font-size:12px;color:#84719f;line-height:1.9}
+/* 键位说明分端显示：触屏只看手势行 */
+#title .tips{display:none}
+body.touch #title .kbd{display:none}
+body.touch #title .tips{display:block}
+/* 触屏故事文案收敛到两行 */
+body.touch #title .story{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* 小屏（含 360x640 竖屏）标题卡片自适应 */
+@media (max-width:600px){
+  #title{align-items:flex-start;padding-top:8vh}
+  #title .card{max-width:92vw;max-height:84vh;overflow-y:auto;padding:22px 18px}
+  #title h1{font-size:30px}
+  #title h2{font-size:15px;margin-bottom:10px}
+  #title .story{font-size:12.5px;margin-bottom:14px}
+  #title .suit{font-size:15px;letter-spacing:10px}
+  #play{font-size:17px;padding:10px 32px}
+  #title .keys{font-size:10.5px;margin-top:12px}
+}
+/* 横屏矮屏（手机 landscape）：标题卡片压缩到一屏内完整显示 */
+@media (orientation:landscape) and (max-height:520px){
+  body.touch #title{align-items:center;padding-top:0}
+  body.touch #title .card{padding:10px 18px;max-height:96vh;overflow-y:auto}
+  body.touch #title .suit{font-size:11px;letter-spacing:6px;text-indent:6px}
+  body.touch #title h1{font-size:20px;margin:2px 0}
+  body.touch #title h2{font-size:11.5px;margin:0 0 8px}
+  body.touch #title .story{display:none}
+  body.touch #modeRow{margin-bottom:10px}
+  #modeRow button{font-size:12px;padding:5px 14px}
+  body.touch #play{font-size:14px;padding:7px 26px}
+  body.touch #title .menu-row{margin-top:10px}
+  .mini{font-size:11px;padding:5px 12px}
+  .seed-row{margin-top:8px}
+  .seed-row label{font-size:10.5px}
+  #seedInput{width:96px;padding:4px 8px;font-size:11.5px}
+  .seed-row .mini{padding:4px 10px;font-size:10.5px}
+  .save-note{margin-top:6px;font-size:9.5px}
+  body.touch #title .tips{font-size:9.5px;margin-top:6px;line-height:1.5}
+}
+
+#err{position:fixed;left:10px;bottom:10px;z-index:40;color:#ff9aa8;font-size:13px;
+  background:rgba(40,0,20,.8);padding:8px 12px;border-radius:8px;display:none;max-width:80vw}
+#debug{position:fixed;left:10px;top:44px;z-index:40;color:#9fe8d9;font-size:11px;
+  background:rgba(10,20,16,.75);padding:4px 8px;border-radius:6px;pointer-events:none;
+  max-width:70vw;word-break:break-all}
+
+/* ---------- 触屏控制：右下角斜向小簇，让出右侧滑动转视角区域 ---------- */
+#joy{position:fixed;width:120px;height:120px;border-radius:50%;z-index:12;display:none;
+  background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.25);pointer-events:none}
+#joyKnob{position:absolute;width:52px;height:52px;left:32px;top:32px;border-radius:50%;
+  background:rgba(255,255,255,.32);box-shadow:0 0 10px rgba(255,255,255,.25)}
+.tbtn{position:fixed;z-index:12;display:none;border:none;border-radius:50%;
+  background:rgba(35,18,60,.42);border:2px solid rgba(255,255,255,.30);color:#fff;
+  line-height:1;padding:0;touch-action:none;-webkit-tap-highlight-color:transparent}
+body.touch.playing .tbtn{display:block}
+/* 斜向布局：Jump 角落 → Down 在其左 → Break ↖ → Place ↖↑ → Fly 顶部，
+   整簇呈对角线收在右下角，右侧大片区域留给滑屏转视角 */
+#btnJump{right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  width:var(--btnJump);height:var(--btnJump);font-size:calc(var(--btnJump)*.42)}
+#btnDown{right:calc(18px + var(--btnJump));bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  width:var(--btnAct);height:var(--btnAct);font-size:calc(var(--btnAct)*.42);display:none}
+body.touch.playing.flying #btnDown{display:block}
+#btnBreak{right:calc(18px + var(--btnJump));
+  bottom:calc(var(--btnAct) + 22px + env(safe-area-inset-bottom,0px));
+  width:var(--btnAct);height:var(--btnAct);font-size:calc(var(--btnAct)*.42)}
+#btnPlace{right:calc(18px + (var(--btnJump) + var(--btnAct))/2);
+  bottom:calc(var(--btnAct)*2 + 34px + env(safe-area-inset-bottom,0px));
+  width:var(--btnAct);height:var(--btnAct);font-size:calc(var(--btnAct)*.42)}
+#btnFly{right:calc(18px + (var(--btnJump) + var(--btnAct))/2);
+  bottom:calc(var(--btnAct)*3 + 44px + env(safe-area-inset-bottom,0px));
+  width:var(--btnFly);height:var(--btnFly);font-size:calc(var(--btnFly)*.42)}
+#btnPause{top:56px;right:10px;width:var(--btnTop);height:var(--btnTop);
+  font-size:calc(var(--btnTop)*.4)}
+#btnHome{top:56px;right:calc(16px + var(--btnTop));width:var(--btnTop);height:var(--btnTop);
+  font-size:calc(var(--btnTop)*.4)}
+
+body.touch #hotbar{left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  transform:none;justify-content:start;gap:3px}
+body.touch #toast{bottom:calc(10px + var(--slot)*3 + 56px)}
+body.touch #hint{font-size:11px;max-width:44vw}
+
+/* ---------- 横屏提示（触屏游玩中竖屏时显示） ---------- */
+#rotateOverlay{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;text-align:center;
+  background:rgba(26,16,48,.94);color:#fff;font-size:18px;
+  text-shadow:0 2px 6px rgba(80,20,90,.9)}
+#rotateOverlay .ph{font-size:64px;animation:rotateHint 1.8s ease-in-out infinite}
+#rotateOverlay .sub{font-size:13px;color:#b9a8d8;letter-spacing:2px}
+@keyframes rotateHint{0%,20%{transform:rotate(0)}55%,75%{transform:rotate(90deg)}100%{transform:rotate(90deg)}}
+@media (orientation:portrait){ body.touch.playing #rotateOverlay{display:flex} }

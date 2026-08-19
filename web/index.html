@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Wonderland Craft · 爱丽丝的方块仙境</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="css/style.css?v=0.1.0">
+</head>
+<body>
+<div id="vignette"></div>
+<div id="crosshair"></div>
+<div id="hotbar"></div>
+<div id="hearts"></div>
+<div id="toast"></div>
+<div id="info"></div>
+<div id="hint"></div>
+<div id="hurt"></div>
+<div id="title">
+  <div class="card">
+    <div class="suit">♠&nbsp;♥&nbsp;♦&nbsp;♣</div>
+    <h1>Wonderland Craft</h1>
+    <h2 id="subtitle">爱丽丝的方块仙境</h2>
+    <p class="story" id="story">掉进兔子洞，坠入旋转的牌局与永不落幕的茶会——<br>
+      在这片薄荷色的梦境里，巨型蘑菇撑起阳伞，玫瑰急着被染红，<br>而每一个方块，都由你摆布。</p>
+    <div id="modeRow">
+      <button id="modeCreative">🎨 创造</button>
+      <button id="modeSurvival">❤️ 生存</button>
+    </div>
+    <button id="play">🐰 坠入仙境</button>
+    <div class="menu-row">
+      <button id="btnSave" class="mini">💾 保存进度</button>
+      <button id="btnReset" class="mini">🗑 重置世界</button>
+    </div>
+    <div class="seed-row">
+      <label for="seedInput">种子</label>
+      <input id="seedInput" type="text" maxlength="24" autocomplete="off" spellcheck="false">
+      <button id="btnSeed" class="mini">🎲 新世界</button>
+    </div>
+    <p class="save-note">进度会自动保存在浏览器本地</p>
+    <div class="keys kbd">WASD 移动 · 空格 跳跃 · 左键 破坏 · 右键 放置 · 滚轮/数字键 选择方块<br>
+      F 飞行 · G 切换创造/生存 · H 回到茶会 · P 截图 · 中键 取色 · M 音乐 · ESC 菜单</div>
+    <div class="keys tips">左侧滑动 移动 · 右侧滑动 转视角 · 轻点 放置 · 长按 破坏（震动）<br>
+      右下按钮 ⬆跳 ⬇降 ⛏破坏 🧱放置 🕊飞行 · 右上 🏠回茶会 ⏸暂停 · 模式在主菜单切换</div>
+  </div>
+</div>
+<div id="death">
+  <div class="dph">🎩</div>
+  <h2>梦，轻轻散了</h2>
+  <p id="deathMsg"></p>
+  <button id="btnRespawn">🍵 在茶会边醒来</button>
+</div>
+<div id="err"></div>
+<div id="rotateOverlay"><div class="ph">📱</div><div>请将手机横过来游玩</div><div class="sub">Wonderland Craft</div></div>
+<div id="joy"><div id="joyKnob"></div></div>
+<button class="tbtn" id="btnPause">⏸</button>
+<button class="tbtn" id="btnHome">🏠</button>
+<button class="tbtn" id="btnPlace">🧱</button>
+<button class="tbtn" id="btnBreak">⛏</button>
+<button class="tbtn" id="btnFly">🕊</button>
+<button class="tbtn" id="btnDown">⬇</button>
+<button class="tbtn" id="btnJump">⬆</button>
+<script src="lib/three.min.js?v=0.1.0"></script>
+<script src="js/config.js?v=0.1.0"></script>
+<script src="js/noise.js?v=0.1.0"></script>
+<script src="js/blocks.js?v=0.1.0"></script>
+<script src="js/textures.js?v=0.1.0"></script>
+<script src="js/worldgen.js?v=0.1.0"></script>
+<script src="js/light.js?v=0.1.0"></script>
+<script src="js/save.js?v=0.1.0"></script>
+<script src="js/mesher.js?v=0.1.0"></script>
+<script src="js/sky.js?v=0.1.0"></script>
+<script src="js/particles.js?v=0.1.0"></script>
+<script src="js/drops.js?v=0.1.0"></script>
+<script src="js/creatures.js?v=0.1.0"></script>
+<script src="js/audio.js?v=0.1.0"></script>
+<script src="js/health.js?v=0.1.0"></script>
+<script src="js/ui.js?v=0.1.0"></script>
+<script src="js/player.js?v=0.1.0"></script>
+<script src="js/main.js?v=0.1.0"></script>
+</body>
+</html>

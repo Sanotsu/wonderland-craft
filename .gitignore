@@ -1,0 +1,18 @@
+node_modules/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+android/capacitor-cordova-android-plugins/build/
+.netlify/
+dist/
+*.log
+
+
+# 一些本地测试的组件页面等
+**/_self*
+**/*mock*
+**/*bak*
+
+**/**.apk

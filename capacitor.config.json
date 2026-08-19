@@ -1,0 +1,8 @@
+{
+  "appId": "com.wonderland.craft",
+  "appName": "Wonderland Craft",
+  "webDir": "web",
+  "android": {
+    "allowMixedContent": false
+  }
+}

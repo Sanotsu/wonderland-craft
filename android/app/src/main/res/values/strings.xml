@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Wonder Craft</string>
+    <string name="title_activity_main">Wonder Craft</string>
+    <string name="package_name">com.wonderland.craft</string>
+    <string name="custom_url_scheme">com.wonderland.craft</string>
+</resources>
