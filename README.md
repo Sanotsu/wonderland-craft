@@ -6,8 +6,8 @@
 
 > 纯前端体素沙盒 · 零外部资源 · 离线可玩
 >
-> - 在线游玩：**https://wcraft.pages.dev**（Cloudflare，大陆直连友好）
->   - 备用 https://wl-c.netlify.app
+> - 在线游玩: https://wcraft.pages.dev
+> - 备用地址: https://wl-c.netlify.app
 > - Android apk： 查看 [releases](https://github.com/Sanotsu/wonderland-craft/releases)（桌面显示名 **Wonder Craft**，锁横屏，完全离线）
 
 ## 当前功能（v0.1.0）
