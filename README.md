@@ -8,7 +8,7 @@
 >
 > - 在线游玩：**https://wcraft.pages.dev**（Cloudflare，大陆直连友好）
 >   - 备用 https://wl-c.netlify.app
-> - Android：根目录 `wonderland-craft.apk`（桌面显示名 **Wonder Craft**，锁横屏，完全离线）
+> - Android apk： 查看 [releases](https://github.com/Sanotsu/wonderland-craft/releases)（桌面显示名 **Wonder Craft**，锁横屏，完全离线）
 
 ## 当前功能（v0.1.0）
 
@@ -67,6 +67,9 @@ copy app\build\outputs\apk\debug\app-debug.apk ..\wonderland-craft.apk
 # 真机一条龙（构建+安装+logcat 日志，需 USB 连接并 adb 可用）
 run-android.bat
 
+# 正式签名 APK（首次：把 jks 路径与口令填入 android/key.properties，该文件不入库）
+release-android.bat       # → wonderland-craft-release-<版本>.apk（构建+验签+SHA256）
+
 # 网页部署（以下命名已存在，如需部署需新建其他名称和修改脚本对应内容）
 deploy-cloudflare.bat   # Cloudflare Pages → wcraft.pages.dev（推荐）
 deploy-netlify.bat      # Netlify → wl-c.netlify.app
@@ -74,7 +77,8 @@ deploy-netlify.bat      # Netlify → wl-c.netlify.app
 
 **发版检查单**：`web/index.html` 全部 `?v=`（当前 0.1.0）、`package.json` version、
 `android/app/build.gradle` versionCode/versionName 三处同步 bump；部署后浏览器验证
-中文显示与资源版本号。
+中文显示与资源版本号。**签名注意**：正式版必须始终使用同一 keystore（密钥/口令遗失
+= 无法再发同签名更新），jks 与 key.properties 均已被 .gitignore 排除。
 
 ## 项目结构
 
@@ -90,8 +94,9 @@ wonderland-craft/
 ├── android/              Capacitor 7 壳（已定制：沉浸全屏/横屏锁/res 最小化）
 ├── docs/                 CODE_ANALYSIS.md（架构与问题清单）· TODO.md（路线图）
 ├── tools/                deploy-cloudflare.mjs · node-harness.mjs · node-gameplay-test.mjs
-├── wonderland-craft.apk  当前构建的安卓安装包
-├── deploy-cloudflare.bat / deploy-netlify.bat / run-android.bat
+├── wonderland-craft.apk  当前 debug 构建的安卓安装包
+├── wonderland-craft-release-0.1.0.apk 正式签名发布包
+├── deploy-cloudflare.bat / deploy-netlify.bat / run-android.bat / release-android.bat
 ├── capacitor.config.json / package.json / netlify.toml
 ```
 
